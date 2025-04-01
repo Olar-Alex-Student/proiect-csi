@@ -1,32 +1,25 @@
-function xorEncrypt(text, key) {
-  let result = "";
-  for (let i = 0; i < text.length; i++) {
-    result += String.fromCharCode(
-      text.charCodeAt(i) ^ key.charCodeAt(i % key.length)
-    );
-  }
-  return btoa(result);
+function aesEncrypt(text, key) {
+  return CryptoJS.AES.encrypt(text, key).toString();
 }
 
-function xorDecrypt(base64, key) {
-  let decoded = atob(base64);
-  let result = "";
-  for (let i = 0; i < decoded.length; i++) {
-    result += String.fromCharCode(
-      decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length)
-    );
+function aesDecrypt(ciphertext, key) {
+  try {
+    const bytes = CryptoJS.AES.decrypt(ciphertext, key);
+    const plaintext = bytes.toString(CryptoJS.enc.Utf8);
+    return plaintext ? plaintext : "Cheie greșită sau mesaj corupt.";
+  } catch (e) {
+    return "Eroare la decriptare.";
   }
-  return result;
 }
 
 document.getElementById("encryptForm").addEventListener("submit", function (e) {
   e.preventDefault();
   const text = document.getElementById("textToEncrypt").value;
   const key = document.getElementById("keyEncrypt").value;
-  const encoded = xorEncrypt(text, key);
+  const encrypted = aesEncrypt(text, key);
 
   const canvas = document.createElement("canvas");
-  QRCode.toCanvas(canvas, encoded, function (error) {
+  QRCode.toCanvas(canvas, encrypted, function (error) {
     if (error) console.error(error);
     document.getElementById("qrcode").innerHTML = "";
     document.getElementById("qrcode").appendChild(canvas);
@@ -60,7 +53,7 @@ function handleDecrypt() {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(imageData.data, canvas.width, canvas.height);
       if (code) {
-        const decrypted = xorDecrypt(code.data, key);
+        const decrypted = aesDecrypt(code.data, key);
         output.textContent = decrypted;
       } else {
         output.textContent = "Cod QR invalid.";
