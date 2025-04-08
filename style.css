@@ -1,6 +1,7 @@
 body {
   font-family: Arial, sans-serif;
 }
+
 #qrcode canvas {
   max-width: 100%;
   height: auto;
@@ -8,4 +9,34 @@ body {
   border-radius: 8px;
   padding: 5px;
   background-color: white;
+}
+
+.form-control:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+#decryptedMessage {
+  min-height: 50px;
+  word-break: break-word;
+}
+
+.btn-primary {
+  background-color: #0069d9;
+  border-color: #0062cc;
+}
+
+.btn-primary:hover {
+  background-color: #0062cc;
+  border-color: #005cbf;
+}
+
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
 }
