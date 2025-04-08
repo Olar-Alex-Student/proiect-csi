@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Criptare AES + QR</title>
+    <title>Criptare Multi-Algoritm + QR</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -12,12 +12,18 @@
   </head>
   <body class="bg-light">
     <div class="container py-5">
-      <h1 class="text-center mb-4">🔐 Criptare AES + QR</h1>
-
+      <h1 class="text-center mb-4">🔐 Criptare Multi-Algoritm + QR</h1>
       <div class="row">
         <div class="col-md-6">
           <h4>Criptează mesaj</h4>
           <form id="encryptForm">
+            <div class="mb-3 algorithm-select">
+              <label for="encryptAlgorithm" class="form-label">Algoritm de criptare</label>
+              <select class="form-select" id="encryptAlgorithm">
+                <option value="aes">AES</option>
+                <option value="tripledes">Triple DES</option>
+              </select>
+            </div>
             <div class="mb-3">
               <label for="textToEncrypt" class="form-label">Mesaj</label>
               <textarea
@@ -28,9 +34,7 @@
               ></textarea>
             </div>
             <div class="mb-3">
-              <label for="keyEncrypt" class="form-label"
-                >Cheie (parolă AES)</label
-              >
+              <label for="keyEncrypt" class="form-label">Cheie (parolă)</label>
               <input
                 type="text"
                 class="form-control"
@@ -41,16 +45,22 @@
             <button type="submit" class="btn btn-primary">Generează QR</button>
           </form>
           <div id="qrcode" class="mt-4"></div>
-          <a
+          
             id="downloadLink"
             class="btn btn-success mt-2 d-none"
-            download="qr_xor.png"
+            download="qr_encrypted.png"
             >Descarcă QR</a
           >
         </div>
-
         <div class="col-md-6">
           <h4>Decriptează mesaj</h4>
+          <div class="mb-3 algorithm-select">
+            <label for="decryptAlgorithm" class="form-label">Algoritm de decriptare</label>
+            <select class="form-select" id="decryptAlgorithm">
+              <option value="aes">AES</option>
+              <option value="tripledes">Triple DES</option>
+            </select>
+          </div>
           <div class="mb-3">
             <label for="qrInput" class="form-label">Încarcă imagine QR</label>
             <input
@@ -61,9 +71,7 @@
             />
           </div>
           <div class="mb-3">
-            <label for="keyDecrypt" class="form-label"
-              >Cheie (parolă AES)</label
-            >
+            <label for="keyDecrypt" class="form-label">Cheie (parolă)</label>
             <input type="text" class="form-control" id="keyDecrypt" />
           </div>
           <button class="btn btn-primary" onclick="handleDecrypt()">
@@ -76,7 +84,6 @@
         </div>
       </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script src="script.js"></script>
