@@ -1,7 +1,9 @@
+/* Stiluri de bază pentru pagină */
 body {
   font-family: Arial, sans-serif;
 }
 
+/* Stiluri pentru afișarea codului QR */
 #qrcode canvas {
   max-width: 100%;
   height: auto;
@@ -9,18 +11,24 @@ body {
   border-radius: 8px;
   padding: 5px;
   background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Îmbunătățiri pentru elementele de formular */
 .form-control:focus {
   border-color: #80bdff;
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
+/* Stiluri pentru containerul mesajului decriptat */
 #decryptedMessage {
   min-height: 50px;
   word-break: break-word;
+  background-color: #f8f9fa;
+  padding: 10px;
 }
 
+/* Stiluri pentru butoane */
 .btn-primary {
   background-color: #0069d9;
   border-color: #0062cc;
@@ -39,4 +47,17 @@ body {
 .btn-success:hover {
   background-color: #218838;
   border-color: #1e7e34;
+}
+
+/* Stiluri pentru secțiunile de criptare și decriptare */
+h4 {
+  margin-bottom: 20px;
+  color: #343a40;
+  border-bottom: 2px solid #dee2e6;
+  padding-bottom: 10px;
+}
+
+/* Stiluri pentru textul ajutător */
+.text-muted {
+  font-size: 0.85rem;
 }
