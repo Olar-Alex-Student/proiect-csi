@@ -1,3 +1,9 @@
+/**
+ * Script pentru aplicația de criptare AES + Triple DES cu coduri QR
+ * Acest script implementează o dublă criptare, aplicând mai întâi AES, apoi Triple DES
+ * pentru o securitate mai robustă.
+ */
+
 // Așteptăm încărcarea completă a paginii înainte de a executa codul
 document.addEventListener("DOMContentLoaded", function() {
     console.log("DOM încărcat complet. Inițializez aplicația...");
@@ -31,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
         
-        // Obținem valorile din câmpuri
+        // Obținem valorile din câmpuri și le curățăm de spații inutile
         const text = textInput.value.trim();
         const key = keyInput.value.trim();
         
@@ -47,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         try {
-            // Efectuăm criptarea
+            // Efectuăm criptarea combinată (AES + Triple DES)
             const encrypted = combinedEncrypt(text, key);
             console.log("Text criptat cu succes.");
             
@@ -91,17 +97,28 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
     
-    // Configurăm butonul de decriptare
+    // Configurăm butonul de decriptare - compatibil cu ambele stiluri (ID sau onclick)
     const decryptButton = document.getElementById("decryptButton");
+    const decryptButtonByOnclick = document.querySelector("button[onclick='handleDecrypt()']");
+    
     if (decryptButton) {
+        // Dacă butonul are ID, îi atașăm un event listener
         decryptButton.addEventListener("click", handleDecrypt);
-        console.log("Butonul de decriptare configurat cu succes.");
+        console.log("Butonul de decriptare (cu ID) configurat cu succes.");
+    } else if (decryptButtonByOnclick) {
+        // Dacă butonul are onclick, înlocuim cu event listener
+        decryptButtonByOnclick.removeAttribute("onclick");
+        decryptButtonByOnclick.addEventListener("click", handleDecrypt);
+        console.log("Butonul de decriptare (cu onclick) configurat cu succes.");
     } else {
         console.error("EROARE: Butonul de decriptare nu a fost găsit!");
     }
 });
 
-// Funcția pentru gestionarea decriptării
+/**
+ * Funcția pentru gestionarea decriptării
+ * Este definită global pentru a fi accesibilă și prin atributul onclick
+ */
 function handleDecrypt() {
     console.log("Inițiez procesul de decriptare...");
     
@@ -190,9 +207,9 @@ function handleDecrypt() {
     reader.readAsDataURL(file);
 }
 
-// Implementarea algoritmilor de criptare
-
-// AES
+/**
+ * Implementarea funcțiilor de criptare și decriptare AES
+ */
 function aesEncrypt(text, key) {
     return CryptoJS.AES.encrypt(text, key).toString();
 }
@@ -211,7 +228,9 @@ function aesDecrypt(ciphertext, key) {
     }
 }
 
-// Triple DES
+/**
+ * Implementarea funcțiilor de criptare și decriptare Triple DES
+ */
 function tripleDesEncrypt(text, key) {
     return CryptoJS.TripleDES.encrypt(text, key).toString();
 }
@@ -230,7 +249,10 @@ function tripleDesDecrypt(ciphertext, key) {
     }
 }
 
-// Funcții combinate
+/**
+ * Funcția de criptare combinată
+ * Aplică mai întâi AES, apoi Triple DES asupra rezultatului
+ */
 function combinedEncrypt(text, key) {
     try {
         // Criptăm mai întâi cu AES
@@ -249,6 +271,10 @@ function combinedEncrypt(text, key) {
     }
 }
 
+/**
+ * Funcția de decriptare combinată
+ * Aplică decriptările în ordine inversă: mai întâi Triple DES, apoi AES
+ */
 function combinedDecrypt(ciphertext, key) {
     try {
         let actualCiphertext = ciphertext;
