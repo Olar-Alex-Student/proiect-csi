@@ -1,7 +1,6 @@
 body {
   font-family: Arial, sans-serif;
 }
-
 #qrcode canvas {
   max-width: 100%;
   height: auto;
@@ -9,4 +8,7 @@ body {
   border-radius: 8px;
   padding: 5px;
   background-color: white;
+}
+.algorithm-select {
+  margin-bottom: 15px;
 }
