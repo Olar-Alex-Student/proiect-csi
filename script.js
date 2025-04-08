@@ -1,4 +1,4 @@
-// Funcții AES Encryption/Decryption (existente)
+// Funcții individuale pentru AES
 function aesEncrypt(text, key) {
   return CryptoJS.AES.encrypt(text, key).toString();
 }
@@ -9,11 +9,11 @@ function aesDecrypt(ciphertext, key) {
     const plaintext = bytes.toString(CryptoJS.enc.Utf8);
     return plaintext ? plaintext : "Cheie greșită sau mesaj corupt.";
   } catch (e) {
-    return "Eroare la decriptare.";
+    return "Eroare la decriptare AES.";
   }
 }
 
-// Funcții Triple DES Encryption/Decryption (nou adăugate)
+// Funcții individuale pentru Triple DES
 function tripleDesEncrypt(text, key) {
   return CryptoJS.TripleDES.encrypt(text, key).toString();
 }
@@ -24,41 +24,41 @@ function tripleDesDecrypt(ciphertext, key) {
     const plaintext = bytes.toString(CryptoJS.enc.Utf8);
     return plaintext ? plaintext : "Cheie greșită sau mesaj corupt.";
   } catch (e) {
-    return "Eroare la decriptare.";
+    return "Eroare la decriptare Triple DES.";
   }
 }
 
-// Funcție pentru a cripta text în funcție de algoritmul selectat
-function encryptText(text, key, algorithm) {
-  switch(algorithm) {
-    case 'aes':
-      return aesEncrypt(text, key);
-    case 'tripledes':
-      return tripleDesEncrypt(text, key);
-    default:
-      return aesEncrypt(text, key); // Default la AES
-  }
+// Funcție de criptare combinată: AES + Triple DES
+function combinedEncrypt(text, key) {
+  // Prima criptare folosind AES
+  const aesEncrypted = aesEncrypt(text, key);
+  // A doua criptare folosind Triple DES asupra rezultatului AES
+  const tripleDesEncrypted = tripleDesEncrypt(aesEncrypted, key);
+  return tripleDesEncrypted;
 }
 
-// Funcție pentru a decripta text în funcție de algoritmul selectat
-function decryptText(ciphertext, key, algorithm) {
-  switch(algorithm) {
-    case 'aes':
-      return aesDecrypt(ciphertext, key);
-    case 'tripledes':
-      return tripleDesDecrypt(ciphertext, key);
-    default:
-      return aesDecrypt(ciphertext, key); // Default la AES
+// Funcție de decriptare combinată: Triple DES + AES (în ordine inversă)
+function combinedDecrypt(ciphertext, key) {
+  // Prima decriptare folosind Triple DES
+  const tripleDesDecrypted = tripleDesDecrypt(ciphertext, key);
+  
+  // Verificăm dacă prima decriptare a reușit
+  if (tripleDesDecrypted.includes("Eroare") || tripleDesDecrypted.includes("Cheie greșită")) {
+    return tripleDesDecrypted;
   }
+  
+  // A doua decriptare folosind AES
+  const aesDecrypted = aesDecrypt(tripleDesDecrypted, key);
+  return aesDecrypted;
 }
 
 document.getElementById("encryptForm").addEventListener("submit", function (e) {
   e.preventDefault();
   const text = document.getElementById("textToEncrypt").value;
   const key = document.getElementById("keyEncrypt").value;
-  const algorithm = document.getElementById("encryptAlgorithm").value;
   
-  const encrypted = encryptText(text, key, algorithm);
+  // Aplicăm criptarea combinată
+  const encrypted = combinedEncrypt(text, key);
   
   const canvas = document.createElement("canvas");
   QRCode.toCanvas(canvas, encrypted, function (error) {
@@ -68,17 +68,13 @@ document.getElementById("encryptForm").addEventListener("submit", function (e) {
     const link = document.getElementById("downloadLink");
     link.href = canvas.toDataURL("image/png");
     link.classList.remove("d-none");
-    
-    // Actualizează numele fișierului în funcție de algoritm
-    const fileName = algorithm === 'aes' ? "qr_aes.png" : "qr_tripledes.png";
-    link.setAttribute('download', fileName);
+    link.setAttribute('download', "qr_aes_tripledes.png");
   });
 });
 
 function handleDecrypt() {
   const fileInput = document.getElementById("qrInput");
   const key = document.getElementById("keyDecrypt").value;
-  const algorithm = document.getElementById("decryptAlgorithm").value;
   const output = document.getElementById("decryptedMessage");
   
   if (fileInput.files.length === 0 || key === "") {
@@ -101,7 +97,8 @@ function handleDecrypt() {
       const code = jsQR(imageData.data, canvas.width, canvas.height);
       
       if (code) {
-        const decrypted = decryptText(code.data, key, algorithm);
+        // Aplicăm decriptarea combinată
+        const decrypted = combinedDecrypt(code.data, key);
         output.textContent = decrypted;
       } else {
         output.textContent = "Cod QR invalid.";
