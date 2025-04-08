@@ -1,4 +1,4 @@
-// Funcții individuale pentru AES
+// Funcții AES îmbunătățite
 function aesEncrypt(text, key) {
   return CryptoJS.AES.encrypt(text, key).toString();
 }
@@ -7,13 +7,16 @@ function aesDecrypt(ciphertext, key) {
   try {
     const bytes = CryptoJS.AES.decrypt(ciphertext, key);
     const plaintext = bytes.toString(CryptoJS.enc.Utf8);
-    return plaintext ? plaintext : "Cheie greșită sau mesaj corupt.";
+    if (!plaintext)
+      throw new Error("Decriptare AES eșuată");
+    return plaintext;
   } catch (e) {
-    return "Eroare la decriptare AES.";
+    console.error("Eroare decriptare AES:", e);
+    throw new Error("Eroare la decriptare AES.");
   }
 }
 
-// Funcții individuale pentru Triple DES
+// Funcții Triple DES îmbunătățite
 function tripleDesEncrypt(text, key) {
   return CryptoJS.TripleDES.encrypt(text, key).toString();
 }
@@ -22,34 +25,67 @@ function tripleDesDecrypt(ciphertext, key) {
   try {
     const bytes = CryptoJS.TripleDES.decrypt(ciphertext, key);
     const plaintext = bytes.toString(CryptoJS.enc.Utf8);
-    return plaintext ? plaintext : "Cheie greșită sau mesaj corupt.";
+    if (!plaintext)
+      throw new Error("Decriptare 3DES eșuată");
+    return plaintext;
   } catch (e) {
-    return "Eroare la decriptare Triple DES.";
+    console.error("Eroare decriptare 3DES:", e);
+    throw new Error("Eroare la decriptare Triple DES.");
   }
 }
 
-// Funcție de criptare combinată: AES + Triple DES
+// Funcția de criptare combinată, îmbunătățită
 function combinedEncrypt(text, key) {
-  // Prima criptare folosind AES
-  const aesEncrypted = aesEncrypt(text, key);
-  // A doua criptare folosind Triple DES asupra rezultatului AES
-  const tripleDesEncrypted = tripleDesEncrypt(aesEncrypted, key);
-  return tripleDesEncrypted;
+  try {
+    // Prima criptare: AES
+    const aesResult = aesEncrypt(text, key);
+    
+    // A doua criptare: Triple DES
+    // Adăugăm un marcator pentru a identifica metoda de criptare
+    const result = tripleDesEncrypt(aesResult, key);
+    
+    // Adăugăm un prefix pentru a marca faptul că acest text folosește criptare dublă
+    return "DUAL:" + result;
+  } catch (e) {
+    console.error("Eroare la criptare combinată:", e);
+    return "Eroare: " + e.message;
+  }
 }
 
-// Funcție de decriptare combinată: Triple DES + AES (în ordine inversă)
+// Funcția de decriptare combinată, îmbunătățită
 function combinedDecrypt(ciphertext, key) {
-  // Prima decriptare folosind Triple DES
-  const tripleDesDecrypted = tripleDesDecrypt(ciphertext, key);
-  
-  // Verificăm dacă prima decriptare a reușit
-  if (tripleDesDecrypted.includes("Eroare") || tripleDesDecrypted.includes("Cheie greșită")) {
-    return tripleDesDecrypted;
+  try {
+    // Verificăm dacă începe cu prefixul nostru
+    if (ciphertext.startsWith("DUAL:")) {
+      // Eliminăm prefixul
+      const actualCiphertext = ciphertext.substring(5);
+      
+      // Prima decriptare: Triple DES
+      const tripleDesResult = tripleDesDecrypt(actualCiphertext, key);
+      
+      // A doua decriptare: AES
+      return aesDecrypt(tripleDesResult, key);
+    } 
+    else {
+      // Pentru compatibilitate cu versiuni anterioare,
+      // încercăm să decriptăm direct cu ambele metode
+      try {
+        // Încercăm mai întâi Triple DES, apoi AES
+        const tripleDesResult = tripleDesDecrypt(ciphertext, key);
+        return aesDecrypt(tripleDesResult, key);
+      } catch (innerError) {
+        // Încercăm doar AES (pentru compatibilitate cu QR-uri vechi)
+        try {
+          return aesDecrypt(ciphertext, key);
+        } catch (aesError) {
+          throw new Error("Cod QR incompatibil sau cheie greșită.");
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Eroare la decriptare combinată:", e);
+    return "Eroare la decriptare: " + e.message;
   }
-  
-  // A doua decriptare folosind AES
-  const aesDecrypted = aesDecrypt(tripleDesDecrypted, key);
-  return aesDecrypted;
 }
 
 document.getElementById("encryptForm").addEventListener("submit", function (e) {
@@ -59,6 +95,12 @@ document.getElementById("encryptForm").addEventListener("submit", function (e) {
   
   // Aplicăm criptarea combinată
   const encrypted = combinedEncrypt(text, key);
+  
+  // Verificăm dacă criptarea a reușit
+  if (encrypted.startsWith("Eroare:")) {
+    alert(encrypted);
+    return;
+  }
   
   const canvas = document.createElement("canvas");
   QRCode.toCanvas(canvas, encrypted, function (error) {
