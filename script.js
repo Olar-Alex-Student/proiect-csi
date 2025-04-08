@@ -1,4 +1,4 @@
-// Așteptăm încărcarea completă a paginii înainte de a executa orice cod
+// Așteptăm încărcarea completă a paginii înainte de a executa codul
 document.addEventListener("DOMContentLoaded", function() {
     console.log("DOM încărcat complet. Inițializez aplicația...");
     
@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const encryptForm = document.getElementById("encryptForm");
     if (!encryptForm) {
         console.error("EROARE CRITICĂ: Formularul #encryptForm nu există în pagină!");
-        alert("Eroare la inițializarea aplicației. Verificați consola pentru detalii.");
+        alert("Eroare la inițializarea aplicației. Elementele necesare lipsesc.");
         return;
     }
     
@@ -15,21 +15,19 @@ document.addEventListener("DOMContentLoaded", function() {
         e.preventDefault();
         console.log("Formular trimis. Inițiez procesul de criptare...");
         
-        // Obținem elementele necesare cu verificări
+        // Obținem elementele necesare
         const textInput = document.getElementById("textToEncrypt");
         const keyInput = document.getElementById("keyEncrypt");
         const qrcodeDiv = document.getElementById("qrcode");
-        const downloadLink = document.getElementById("downloadLink");
         
-        // Verificăm dacă toate elementele necesare există
-        if (!textInput || !keyInput || !qrcodeDiv || !downloadLink) {
-            console.error("Elemente lipsă:", {
+        // Verificăm dacă elementele esențiale există
+        if (!textInput || !keyInput || !qrcodeDiv) {
+            console.error("Elemente esențiale lipsă:", {
                 textInput: !!textInput,
                 keyInput: !!keyInput,
-                qrcodeDiv: !!qrcodeDiv,
-                downloadLink: !!downloadLink
+                qrcodeDiv: !!qrcodeDiv
             });
-            alert("Unele elemente necesare lipsesc din pagină. Verificați consola pentru detalii.");
+            alert("Unele elemente necesare lipsesc din pagină.");
             return;
         }
         
@@ -54,7 +52,8 @@ document.addEventListener("DOMContentLoaded", function() {
             console.log("Text criptat cu succes.");
             
             // Generăm codul QR
-            QRCode.toCanvas(document.createElement("canvas"), encrypted, function(error, canvas) {
+            const canvas = document.createElement("canvas");
+            QRCode.toCanvas(canvas, encrypted, function(error) {
                 if (error) {
                     console.error("Eroare generare QR:", error);
                     alert("Eroare la generarea codului QR: " + error);
@@ -65,10 +64,24 @@ document.addEventListener("DOMContentLoaded", function() {
                 qrcodeDiv.innerHTML = "";
                 qrcodeDiv.appendChild(canvas);
                 
+                // Verificăm existența sau creăm link-ul de descărcare
+                let downloadLink = document.getElementById("downloadLink");
+                if (!downloadLink) {
+                    console.log("Linkul de descărcare nu există. Îl creez acum...");
+                    downloadLink = document.createElement("a");
+                    downloadLink.id = "downloadLink";
+                    downloadLink.className = "btn btn-success mt-2";
+                    downloadLink.textContent = "Descarcă QR";
+                    downloadLink.setAttribute("download", "qr_aes_tripledes.png");
+                    // Adăugăm linkul după elementul qrcode
+                    qrcodeDiv.parentNode.insertBefore(downloadLink, qrcodeDiv.nextSibling);
+                } else {
+                    // Dacă linkul există, îl facem vizibil
+                    downloadLink.classList.remove("d-none");
+                }
+                
                 // Actualizăm link-ul de descărcare
                 downloadLink.href = canvas.toDataURL("image/png");
-                downloadLink.classList.remove("d-none");
-                downloadLink.setAttribute('download', "qr_aes_tripledes.png");
                 
                 console.log("Cod QR generat și afișat cu succes.");
             });
@@ -78,11 +91,9 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
     
-    // Configurăm funcția de decriptare
-    const decryptButton = document.querySelector("button[onclick='handleDecrypt()']");
+    // Configurăm butonul de decriptare
+    const decryptButton = document.getElementById("decryptButton");
     if (decryptButton) {
-        // Înlocuim atributul inline cu un event listener proper
-        decryptButton.removeAttribute("onclick");
         decryptButton.addEventListener("click", handleDecrypt);
         console.log("Butonul de decriptare configurat cu succes.");
     } else {
@@ -90,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-// Funcția de decriptare
+// Funcția pentru gestionarea decriptării
 function handleDecrypt() {
     console.log("Inițiez procesul de decriptare...");
     
